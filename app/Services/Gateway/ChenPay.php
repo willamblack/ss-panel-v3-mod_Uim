@@ -103,7 +103,7 @@ class ChenPay extends AbstractPayment
             $newOrder->userid = $user->id;
             $newOrder->total = $amount;
             $newOrder->datetime = time() + 3 * 60; // 有效时间
-            $newOrder->sys_sn = rand(100000, 999999) . $user->id . $newOrder->datetime;
+            $newOrder->tradeno = rand(100000, 999999) . $user->id . $newOrder->datetime;
             $newOrder->type = $type;
             $newOrder->url = $url;
             $newOrder->save();
@@ -201,9 +201,8 @@ class ChenPay extends AbstractPayment
                 $tradeAll = Paylist::where('status', 0)->where('type', 1)->where('datetime', '>', time())->orderBy('id', 'desc')->get();
                 foreach ($tradeAll as $item) {
                     $order = $run->DataContrast($item->total, $item->datetime);
-                    if ($order) ChenPay::postPayment($item->id, 'chenPay支付' . $order);
+                    if ($order) ChenPay::postPayment($item->tradeno, 'chenPay支付' . $order);
                 }
-                Paylist::where('status', 0)->where('type', 1)->where('datetime', '<', time())->delete();
                 echo $GLOBALS['AliSum'] . "次运行\n";
                 (new ChenPay())->sendSunMail(1);
                 $GLOBALS['AliSum']++;
@@ -230,9 +229,8 @@ class ChenPay extends AbstractPayment
                 $tradeAll = Paylist::where('status', 0)->where('type', 2)->where('datetime', '>', time())->orderBy('id', 'desc')->get();
                 foreach ($tradeAll as $item) {
                     $order = $run->DataContrast($item->total, $item->datetime);
-                    if ($order) ChenPay::postPayment($item->id, 'chenPay支付' . $order);
+                    if ($order) ChenPay::postPayment($item->tradeno, 'chenPay支付' . $order);
                 }
-                Paylist::where('status', 0)->where('type', 2)->where('datetime', '<', time())->delete();
                 echo $GLOBALS['WxSum'] . "次运行\n";
                 (new ChenPay())->sendSunMail(2);
                 $GLOBALS['WxSum']++;
