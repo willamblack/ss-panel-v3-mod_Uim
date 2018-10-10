@@ -73,6 +73,8 @@ $System_Config['max_port']='65535';							//用户端口池最大值
 $System_Config['reg_forbidden_port']='';					//注册时默认禁止访问端口列表，半角英文逗号分割，支持端口段
 $System_Config['mu_suffix']='microsoft.com';				//单端口多用户混淆参数后缀，可以随意修改，但请保持前后端一致
 $System_Config['mu_regex']='%5m%id.%suffix';				//单端口多用户混淆参数表达式，%5m代表取用户特征 md5 的前五位，%id 代表用户id,%suffix 代表上面这个后缀。
+$System_Config['enableRefund']=0;				            //开启购买新套餐退款旧套餐功能 ( 1. 开启 0. 关闭
+$System_Config['refundPercentage']= 0.8;				    //退款百分比建议设置 0.01~1 之间的数字
 
 #邀请链接
 $System_Config['enable_invite_code']='false';		//是否强制开启邀请，为true则注册必须使用邀请链接，且邀请人等级为0时邀请链接不可用
