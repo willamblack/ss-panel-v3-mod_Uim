@@ -1279,6 +1279,7 @@ class UserController extends BaseController
             $boughts = Bought::where("userid", $user->id)->get();
             foreach ($boughts as $disable_bought) {
                 $disable_bought->renew = 0;
+                $disable_bought->datetime = 0;
                 $disable_bought->save();
             }
         }
