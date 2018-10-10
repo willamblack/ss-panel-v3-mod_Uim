@@ -1247,6 +1247,12 @@ class UserController extends BaseController
         }
 
         $price = $shop->price * ((100 - $credit) / 100);
+        //禁止降级, 避免傻逼用户骚操作烦人
+        if($user->class > json_decode($shop->content)->class){
+        	$res['ret'] = 0;
+	      	$res['msg'] = "不支持购买降级套餐～";
+    	  	return $response->getBody()->write(json_encode($res));
+        }
         $user = $this->user;
 
         if ($user->money < $price) {
@@ -1256,6 +1262,17 @@ class UserController extends BaseController
         }
 
         $user->money = $user->money - $price;
+        //自动退款(基于最后一次购买记录) 简化退款升级套餐流程
+        if(Config::get('enableRefund')){
+            $lastBought = Bought::where("userid", $user->id)->orderBy("id", "desc")->first();
+            $lastShop = Shop::where("id", $lastBought->shopid)->first();
+            if(json_decode($lastShop->content)->class_expire * 86400 + $lastBought->datetime > strtotime(date("Y-m-d H:i:s"))){
+                $overTime = (strtotime(date("Y-m-d H:i:s")) - strtotime(date("Y-m-d H:i:s", $lastBought->datetime))) / 86400;
+                $overPrice = (1 - $overTime / json_decode($lastShop->content)->class_expire) * $lastBought->price * Config::get('refundPercentage');
+                $user->money = $user->money + $overPrice;
+                $user->class_expire = date("Y-m-d H:i:s");
+            }
+        }
         $user->save();
 
         if ($disableothers == 1) {
