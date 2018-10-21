@@ -80,7 +80,7 @@ $app->get('/tos', 'App\Controllers\HomeController:tos');
 $app->get('/staff', 'App\Controllers\HomeController:staff');
 $app->get('/gfwlistjs', 'App\Controllers\LinkController:GetGfwlistJs');
 $app->post('/telegram_callback', 'App\Controllers\HomeController:telegram');
-$app->get('/yft/notify', 'App\Controllers\YFTPayCallBackController:yft_notify');            // @todo: Will be replaced by Payment::notify
+$app->get('/yft/notify', 'App\Services\Gateway\YftPay:notify');            // @todo: Will be replaced by Payment::notify
 $app->get('/codepay_callback', 'App\Services\Payment:notify');
 $app->post('/codepay_callback', 'App\Services\Payment:notify');
 
@@ -141,10 +141,10 @@ $app->group('/user', function () {
     $this->get('/backtoadmin', 'App\Controllers\UserController:backtoadmin');
     $this->get('/code', 'App\Controllers\UserController:code');
     //易付通路由定义 start
-    $this->post('/code/yft/pay', 'App\Services\Gateway\YFTPay:yftPay');
-    $this->get('/code/yft/pay/result', 'App\Services\Gateway\YFTPay:yftPayResult');
-    $this->post('/code/yft', 'App\Services\Gateway\YFTPay:yft');
-    $this->get('/yftOrder', 'App\Services\Gateway\YFTPay:yftOrder');
+    $this->post('/code/yft/pay', 'App\Services\Gateway\YftPay:yftPay');
+    $this->get('/code/yft/pay/result', 'App\Services\Gateway\YftPay:notify');
+    $this->post('/code/yft', 'App\Services\Gateway\YftPay:yft');
+    $this->get('/yftOrder', 'App\Services\Gateway\YftPay:yftOrder');
     //易付通路由定义 end
     $this->get('/alipay', 'App\Controllers\UserController:alipay');
     $this->post('/code/f2fpay', 'App\Services\Payment:purchase');
@@ -288,14 +288,13 @@ $app->group('/admin', function () {
     $this->post('/code/ajax', 'App\Controllers\Admin\CodeController:ajax_code');
 
     // User Mange
-    $this->get('/find', 'App\Controllers\AdminController:find');
-    $this->post('/finduser', 'App\Controllers\AdminController:finduser');
     $this->get('/user', 'App\Controllers\Admin\UserController:index');
     $this->get('/user/{id}/edit', 'App\Controllers\Admin\UserController:edit');
     $this->put('/user/{id}', 'App\Controllers\Admin\UserController:update');
     $this->delete('/user', 'App\Controllers\Admin\UserController:delete');
     $this->post('/user/changetouser', 'App\Controllers\Admin\UserController:changetouser');
     $this->get('/user/ajax', 'App\Controllers\Admin\UserController:ajax');
+    $this->post('/user/ajax', 'App\Controllers\Admin\UserController:ajax_post');
 
 
     $this->get('/coupon', 'App\Controllers\AdminController:coupon');
