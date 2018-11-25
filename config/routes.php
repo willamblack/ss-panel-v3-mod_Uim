@@ -166,6 +166,8 @@ $app->group('/user', function () {
 
     $this->get('/url_reset', 'App\Controllers\UserController:resetURL');
 
+    $this->get('/inviteurl_reset', 'App\Controllers\UserController:resetInviteURL');
+
     //Reconstructed Payment System
     $this->post('/payment/purchase', 'App\Services\Payment:purchase');
     $this->get('/payment/return', 'App\Services\Payment:returnHTML');
@@ -173,7 +175,10 @@ $app->group('/user', function () {
 
 $app->group('/payment', function () {
     $this->post('/notify', 'App\Services\Payment:notify');
+    $this->post('/notify/{type}', 'App\Services\Payment:notify');
+    $this->post('/status', 'App\Services\Payment:getStatus');
 });
+
 // Auth
 $app->group('/auth', function () {
     $this->get('/login', 'App\Controllers\AuthController:login');
@@ -293,8 +298,7 @@ $app->group('/admin', function () {
     $this->put('/user/{id}', 'App\Controllers\Admin\UserController:update');
     $this->delete('/user', 'App\Controllers\Admin\UserController:delete');
     $this->post('/user/changetouser', 'App\Controllers\Admin\UserController:changetouser');
-    $this->get('/user/ajax', 'App\Controllers\Admin\UserController:ajax');
-    $this->post('/user/ajax', 'App\Controllers\Admin\UserController:ajax_post');
+    $this->post('/user/ajax', 'App\Controllers\Admin\UserController:ajax');
 
 
     $this->get('/coupon', 'App\Controllers\AdminController:coupon');

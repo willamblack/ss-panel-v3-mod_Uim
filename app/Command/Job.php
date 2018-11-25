@@ -24,7 +24,6 @@ use App\Utils\Wecenter;
 use App\Utils\Tools;
 use App\Services\Mail;
 use App\Utils\QQWry;
-use App\Utils\Duoshuo;
 use App\Utils\GA;
 use App\Utils\Telegram;
 use CloudXNS\Api;
@@ -87,15 +86,6 @@ class Job
         Telegram::Send("备份完毕了喵~今天又是安全祥和的一天呢。");
     }
 
-    public static function SyncDuoshuo()
-    {
-        $users = User::all();
-        foreach ($users as $user) {
-            Duoshuo::add($user);
-        }
-        echo "ok";
-    }
-
     public static function UserGa()
     {
         $users = User::all();
@@ -128,7 +118,7 @@ class Job
     {
         $nodes = Node::all();
         foreach ($nodes as $node) {
-            if ($node->sort == 0 || $node->sort == 10) {
+            if ($node->sort == 0 || $node->sort == 10 || $node->sort == 11) {
                 if (date("d")==$node->bandwidthlimit_resetday) {
                     $node->node_bandwidth=0;
                     $node->save();
@@ -352,7 +342,7 @@ class Job
             $disconnected->delete();
         }
 
-        //auto renew
+        //自动续费
         $boughts=Bought::where("renew", "<", time())->where("renew", "<>", 0)->get();
         foreach ($boughts as $bought) {
             $user=User::where("id", $bought->userid)->first();
@@ -362,36 +352,41 @@ class Job
                 continue;
             }
 
-            if ($user->money>=$bought->price) {
-                $shop=Shop::where("id", $bought->shopid)->first();
-
-                if ($shop == null) {
-                    $bought->delete();
-                    continue;
-                }
-
-                $user->money=$user->money-$bought->price;
-
+			$shop=Shop::where("id", $bought->shopid)->first();
+			if ($shop == null) {
+                $bought->delete();
+				$subject = Config::get('appName')."-续费失败";
+                    $to = $user->email;
+                    $text = "您好，系统为您自动续费商品时，发现该商品已被下架，为能继续正常使用，建议您登录用户面板购买新的商品。" ;
+                    try {
+                        Mail::send($to, $subject, 'news/warn.tpl', [
+                            "user" => $user,"text" => $text
+                        ], [
+                        ]);
+                    } catch (\Exception $e) {
+                        echo $e->getMessage();
+                    }
+                continue;
+            }
+            if ($user->money >= $shop->price) {    
+                $user->money=$user->money - $shop->price;
                 $user->save();
-
                 $shop->buy($user, 1);
-
                 $bought->renew=0;
                 $bought->save();
-
 
                 $bought_new=new Bought();
                 $bought_new->userid=$user->id;
                 $bought_new->shopid=$shop->id;
                 $bought_new->datetime=time();
                 $bought_new->renew=time()+$shop->auto_renew*86400;
-                $bought_new->price=$bought->price;
+                $bought_new->price=$shop->price;
                 $bought_new->coupon="";
                 $bought_new->save();
 
                 $subject = Config::get('appName')."-续费成功";
                 $to = $user->email;
-                $text = "您好，系统已经为您自动续费，商品名：".$shop->name.",金额:".$bought->price." 元。" ;
+                $text = "您好，系统已经为您自动续费，商品名：".$shop->name.",金额:".$shop->price." 元。" ;
                 try {
                     Mail::send($to, $subject, 'news/warn.tpl', [
                         "user" => $user,"text" => $text
@@ -408,7 +403,7 @@ class Job
                 if (!file_exists(BASE_PATH."/storage/".$bought->id.".renew")) {
                     $subject = Config::get('appName')."-续费失败";
                     $to = $user->email;
-                    $text = "您好，系统为您自动续费商品名：".$shop->name.",金额:".$bought->price." 元 时，发现您余额不足，请及时充值，当您充值之后，稍等一会系统就会自动扣费为您续费了。" ;
+                    $text = "您好，系统为您自动续费商品名：".$shop->name.",金额:".$shop->price." 元 时，发现您余额不足，请及时充值。充值后请稍等系统便会自动为您续费。" ;
                     try {
                         Mail::send($to, $subject, 'news/warn.tpl', [
                             "user" => $user,"text" => $text

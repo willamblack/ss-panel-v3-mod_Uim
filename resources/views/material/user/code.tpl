@@ -64,7 +64,7 @@
                                     <p class="card-heading">充值码</p>
                                     <div class="form-group form-group-label">
                                         <label class="floating-label" for="code">充值码</label>
-                                        <input class="form-control" id="code" type="text">
+                                        <input class="form-control maxwidth-edit" id="code" type="text">
                                     </div>
                                 </div>
                                 <div class="card-action">
@@ -81,9 +81,9 @@
                     <div class="card margin-bottom-no">
                         <div class="card-main">
                             <div class="card-inner">
-                                <div class="card-inner">
+                               
                                     <div class="card-table">
-                                        <div class="table-responsive">
+                                        <div class="table-responsive table-user">
                                             {$codes->render()}
                                             <table class="table table-hover">
                                                 <tr>
@@ -131,7 +131,7 @@
                                             {$codes->render()}
                                         </div>
                                     </div>
-                                </div>
+                                
 
                             </div>
                         </div>
@@ -146,18 +146,45 @@
                             </div>
                             <div class="modal-inner">
                                 <p id="title">感谢您对我们的支持，请耐心等待</p>
-                                <img src="/images/qianbai-2.png" height="200" width="200" />
                             </div>
                         </div>
                     </div>
                 </div>
-                
+
                 {include file='dialog.tpl'}
             </div>
         </section>
     </div>
 </main>
-
+<script>
+	$(document).ready(function () {
+		$("#code-update").click(function () {
+			$.ajax({
+				type: "POST",
+				url: "code",
+				dataType: "json",
+				data: {
+					code: $("#code").val()
+				},
+				success: function (data) {
+					if (data.ret) {
+						$("#result").modal();
+						$("#msg").html(data.msg);
+						window.setTimeout("location.href=window.location.href", {$config['jump_delay']});
+					} else {
+						$("#result").modal();
+						$("#msg").html(data.msg);
+						window.setTimeout("location.href=window.location.href", {$config['jump_delay']});
+					}
+				},
+				error: function (jqXHR) {
+					$("#result").modal();
+					$("#msg").html("发生错误：" + jqXHR.status);
+				}
+			})
+		})
+})
+</script>
 
 
 
